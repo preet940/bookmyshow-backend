@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # local
     "apps.users",
     "apps.theatres",
+    "apps.movies",
 ]
 
 MIDDLEWARE = [
