@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.theatres",
     "apps.movies",
+    "apps.shows"
 ]
 
 MIDDLEWARE = [
