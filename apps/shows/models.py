@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import F, Q
 
 from apps.movies.models import Movie
-from apps.theatres.models import Screen
+from apps.theatres.models import Screen, Seat
 
 
 class Show(models.Model):
@@ -44,3 +44,44 @@ class Show(models.Model):
 
     def __str__(self):
         return f"{self.movie.title} @ {self.start_time:%Y-%m-%d %H:%M}"
+
+
+
+class ShowSeat(models.Model):
+    class Status(models.TextChoices):
+        AVAILABLE = "available", "Available"
+        HELD = "held", "Held"
+        BOOKED = "booked", "Booked"
+
+    show = models.ForeignKey(
+        Show,
+        on_delete=models.CASCADE,
+        related_name="show_seats",
+    )
+    seat = models.ForeignKey(
+        Seat,
+        on_delete=models.PROTECT,
+        related_name="show_seats",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.AVAILABLE,
+    )
+    held_until = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["show_id", "seat_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["show", "seat"],
+                name="unique_seat_per_show",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["show", "status"]),
+            models.Index(fields=["status", "held_until"]),
+        ]
+
+    def __str__(self):
+        return f"{self.seat} - {self.status}"    
