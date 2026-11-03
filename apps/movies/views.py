@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+from .models import Movie
+from .serializers import MovieSerializer
+
+
+class MovieViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Movie.objects.filter(is_active=True)
+    serializer_class = MovieSerializer
+    lookup_field = "slug"
