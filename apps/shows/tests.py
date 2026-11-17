@@ -29,9 +29,6 @@ def show_with_seats(db):
         end_time=start + timedelta(hours=2),
         price_regular=100, price_premium=200, price_recliner=300,
     )
-    ShowSeat.objects.bulk_create(
-        [ShowSeat(show=show, seat=s) for s in screen.seats.all()]
-    )
     return show
 
 
