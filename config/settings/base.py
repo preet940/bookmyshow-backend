@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "apps.theatres",
     "apps.movies",
     "apps.shows",
+    "apps.bookings"
 ]
 
 MIDDLEWARE = [
