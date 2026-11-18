@@ -69,6 +69,13 @@ class ShowSeat(models.Model):
         default=Status.AVAILABLE,
     )
     held_until = models.DateTimeField(null=True, blank=True)
+    held_by = models.ForeignKey(
+        "users.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
 
     class Meta:
         ordering = ["show_id", "seat_id"]

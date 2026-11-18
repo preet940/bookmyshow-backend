@@ -12,7 +12,7 @@ class SeatUnavailable(Exception):
     pass
 
 
-def hold_seats(show_id, seat_ids):
+def hold_seats(show_id, seat_ids, user):
     """Hold the given seats for HOLD_MINUTES. All or nothing."""
     now = timezone.now()
     with transaction.atomic():
@@ -34,6 +34,7 @@ def hold_seats(show_id, seat_ids):
         for ss in show_seats:
             ss.status = ShowSeat.Status.HELD
             ss.held_until = hold_until
+            ss.held_by = user
         ShowSeat.objects.bulk_update(show_seats, ["status", "held_until"])
 
     return show_seats

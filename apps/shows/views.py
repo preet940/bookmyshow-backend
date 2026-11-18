@@ -41,7 +41,7 @@ class ShowViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = HoldSeatsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            held = hold_seats(show.id, serializer.validated_data["seat_ids"])
+            held = hold_seats(show.id, serializer.validated_data["seat_ids"], request.user)
         except SeatUnavailable as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         return Response({

@@ -9,6 +9,12 @@ from apps.movies.models import Movie
 from apps.shows.models import Show, ShowSeat
 from apps.shows.services import SeatUnavailable, hold_seats
 from apps.theatres.models import City, Screen, Seat, Theatre
+from apps.users.models import User
+
+
+@pytest.fixture
+def user(db):
+    return User.objects.create_user(email="u@example.com", password="pw-12345-x")
 
 
 @pytest.fixture
@@ -24,28 +30,28 @@ def show_with_seats(db):
         duration_minutes=120, release_date=timezone.now().date(),
     )
     start = timezone.now() + timedelta(days=1)
-    show = Show.objects.create(
+    # ShowSeat rows are created automatically by the post_save signal
+    return Show.objects.create(
         movie=movie, screen=screen, start_time=start,
         end_time=start + timedelta(hours=2),
         price_regular=100, price_premium=200, price_recliner=300,
     )
-    return show
 
 
-def test_second_hold_on_same_seat_fails(show_with_seats):
+def test_second_hold_on_same_seat_fails(show_with_seats, user):
     seat_id = show_with_seats.show_seats.first().seat_id
-    hold_seats(show_with_seats.id, [seat_id])
+    hold_seats(show_with_seats.id, [seat_id], user)
     with pytest.raises(SeatUnavailable):
-        hold_seats(show_with_seats.id, [seat_id])
+        hold_seats(show_with_seats.id, [seat_id], user)
 
 
 @pytest.mark.django_db(transaction=True)
-def test_no_double_booking_under_concurrency(show_with_seats):
+def test_no_double_booking_under_concurrency(show_with_seats, user):
     seat_id = show_with_seats.show_seats.first().seat_id
 
     def attempt(_):
         try:
-            hold_seats(show_with_seats.id, [seat_id])
+            hold_seats(show_with_seats.id, [seat_id], user)
             return "won"
         except SeatUnavailable:
             return "lost"
