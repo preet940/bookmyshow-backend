@@ -63,3 +63,10 @@ def test_no_double_booking_under_concurrency(show_with_seats, user):
 
     assert results.count("won") == 1
     assert results.count("lost") == 19
+
+def test_hold_records_who_holds_it(show_with_seats, user):
+    seat_id = show_with_seats.show_seats.first().seat_id
+    hold_seats(show_with_seats.id, [seat_id], user)
+    ss = show_with_seats.show_seats.get(seat_id=seat_id)
+    assert ss.held_by_id == user.id
+    assert ss.status == "held"

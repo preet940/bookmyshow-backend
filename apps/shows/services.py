@@ -35,6 +35,6 @@ def hold_seats(show_id, seat_ids, user):
             ss.status = ShowSeat.Status.HELD
             ss.held_until = hold_until
             ss.held_by = user
-        ShowSeat.objects.bulk_update(show_seats, ["status", "held_until"])
+        ShowSeat.objects.bulk_update(show_seats, ["status", "held_until", "held_by"])
 
     return show_seats
