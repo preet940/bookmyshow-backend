@@ -72,3 +72,26 @@ def confirm_booking(user, show_id, seat_ids, idempotency_key):
         return payment.booking, False
 
     return booking, True
+def cancel_booking(user, booking_id):
+    with transaction.atomic():
+        booking = (
+            Booking.objects.select_for_update()
+            .filter(id=booking_id, user=user)
+            .first()
+        )
+        if booking is None:
+            raise BookingError("Booking not found.")
+        if booking.status == Booking.Status.CANCELLED:
+            raise BookingError("Booking is already cancelled.")
+
+        show_seat_ids = list(
+            booking.booking_seats.values_list("show_seat_id", flat=True)
+        )
+        ShowSeat.objects.filter(id__in=show_seat_ids).update(
+            status=ShowSeat.Status.AVAILABLE,
+            held_until=None,
+            held_by=None,
+        )
+        booking.status = Booking.Status.CANCELLED
+        booking.save(update_fields=["status"])
+    return booking

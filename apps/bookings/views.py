@@ -1,9 +1,10 @@
 from rest_framework import mixins, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Booking
 from .serializers import BookingSerializer, CreateBookingSerializer
-from .services import BookingError, confirm_booking
+from .services import BookingError, cancel_booking, confirm_booking
 
 
 class BookingViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -18,6 +19,7 @@ class BookingViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
         )
 
     def create(self, request):
+            
         key = request.headers.get("Idempotency-Key")
         if not key:
             return Response(
@@ -37,3 +39,12 @@ class BookingViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
             return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         data = BookingSerializer(booking).data
         return Response(data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        try:
+            booking = cancel_booking(request.user, pk)
+        except BookingError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+        return Response(BookingSerializer(booking).data)    

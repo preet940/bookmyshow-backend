@@ -10,6 +10,7 @@ from apps.shows.models import Show, ShowSeat
 from apps.shows.services import hold_seats
 from apps.theatres.models import City, Screen, Seat, Theatre
 from apps.users.models import User
+from apps.bookings.services import BookingError, cancel_booking, confirm_booking
 
 
 @pytest.fixture
@@ -89,3 +90,31 @@ def test_expired_hold_is_rejected(show, user):
     with pytest.raises(BookingError):
         confirm_booking(user, show.id, ids, "key-5")
     assert show.show_seats.filter(status="booked").count() == 0
+
+def test_cancel_frees_seats_and_marks_cancelled(show, user):
+    ids = seat_ids(show)
+    hold_seats(show.id, ids, user)
+    booking, _ = confirm_booking(user, show.id, ids, "key-6")
+    cancel_booking(user, booking.id)
+    booking.refresh_from_db()
+    assert booking.status == "cancelled"
+    assert show.show_seats.filter(status="available").count() == 5
+
+
+def test_cannot_cancel_twice(show, user):
+    ids = seat_ids(show)
+    hold_seats(show.id, ids, user)
+    booking, _ = confirm_booking(user, show.id, ids, "key-7")
+    cancel_booking(user, booking.id)
+    with pytest.raises(BookingError):
+        cancel_booking(user, booking.id)
+
+
+def test_cannot_cancel_someone_elses_booking(show, user, other_user):
+    ids = seat_ids(show)
+    hold_seats(show.id, ids, user)
+    booking, _ = confirm_booking(user, show.id, ids, "key-8")
+    with pytest.raises(BookingError):
+        cancel_booking(other_user, booking.id)
+    booking.refresh_from_db()
+    assert booking.status == "confirmed"    
