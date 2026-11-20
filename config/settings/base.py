@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     # third party
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
     # local
     "apps.users",
     "apps.theatres",
@@ -82,10 +83,18 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
+    
     ],
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
-    ],
+    ],    
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+SPECTACULAR_SETTINGS = {
+    "TITLE": "BookMyShow Backend API",
+    "DESCRIPTION": "Movie ticket booking with concurrency-safe seat holds and idempotent payments.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
