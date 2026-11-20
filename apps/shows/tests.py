@@ -70,3 +70,16 @@ def test_hold_records_who_holds_it(show_with_seats, user):
     ss = show_with_seats.show_seats.get(seat_id=seat_id)
     assert ss.held_by_id == user.id
     assert ss.status == "held"
+
+def test_release_expired_holds_command(show_with_seats, user):
+    from django.core.management import call_command
+
+    seat_id = show_with_seats.show_seats.first().seat_id
+    hold_seats(show_with_seats.id, [seat_id], user)
+    show_with_seats.show_seats.filter(seat_id=seat_id).update(
+        held_until=timezone.now() - timedelta(minutes=1)
+    )
+    call_command("release_expired_holds")
+    ss = show_with_seats.show_seats.get(seat_id=seat_id)
+    assert ss.status == "available"
+    assert ss.held_by_id is None    
