@@ -98,6 +98,6 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "BookMyShow Backend API",
     "DESCRIPTION": "Movie ticket booking with concurrency-safe seat holds and idempotent payments.",
-    "VERSION": "1.0.0",
+    "VERSION": "1.0.1",
     "SERVE_INCLUDE_SCHEMA": False,
 }
